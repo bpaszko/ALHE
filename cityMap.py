@@ -87,25 +87,33 @@ class CityMap:
                 best = v
         return best
 
-    def compute_travel_time(self, times, current_time):
-        normal_time, peek_time = times
-        peek_start, peek_end = self.peek_hours
-        if current_time < peek_start and current_time + normal_time <= peek_start:
-            return normal_time
-        if current_time > peek_end:
-            return normal_time
-        if current_time >= peek_start and current_time + peek_time <= peek_end:
-            return peek_time
-        if current_time <= peek_start and current_time + normal_time <= peek_end:
-            time = peek_start - current_time
-            driven_part = time/normal_time
-            left_time = (1-driven_part)*peek_time
-            return current_time + time + left_time
-        if current_time >= peek_start and current_time + peek_time >= peek_end:
-            time = peek_end - current_time
-            driven_part = time/peek_time
-            left_time = (1-driven_part)*normal_time
-            return current_time + time + left_time
+    def compute_travel_time(self, times, current_time, remaining_part=1):
+        if self.is_in_peek_hours(current_time):
+            travel_time = times[1]
+            end_time = current_time + travel_time
+            peek_end = self.peek_hours[1]
+            overtime = end_time - peek_end
+            if overtime > 0:
+                new_part = 1 - overtime / travel_time
+                return travel_time - overtime + self.compute_travel_time(times, peek_end, new_part)
+            else: 
+                return travel_time
+        elif current_time < self.peek_hours[0]:
+            travel_time = times[0]
+            end_time = current_time + travel_time
+            peek_start = self.peek_hours[0]
+            overtime = end_time - peek_start
+            if overtime > 0:
+                new_part = 1 - overtime / travel_time
+                return travel_time - overtime + self.compute_travel_time(times, peek_start, new_part)
+            else: 
+                return travel_time
+        else:
+            return times[0]
+
+
+    def is_in_peek_hours(self, current_time):
+        return current_time >= self.peek_hours[0] and current_time <= self.peek_hours[1]
 
     def __repr__(self):
         return str(self.graph)
