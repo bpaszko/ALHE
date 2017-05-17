@@ -1,13 +1,15 @@
-from collections import defaultdict
 
 class Vertex:
     def __init__(self, id_):
         self.id = id_
-        self.adjacent = defaultdict(tuple())
+        self.adjacent = dict()
 
     def add_neighbour(self, description):
         end, *times = description
         self.adjacent[end] = tuple(times)
+
+    def __repr__(self):
+        return "%s: %s" % (self.id, self.adjacent)
 
 
 class CityMap:
@@ -22,21 +24,23 @@ class CityMap:
             self.graph[start] = Vertex(start)
         self.graph[start].add_neighbour(tuple(route))
 
+
     def dijkstra(self, start, end_points, current_time):
         result = {}
         vertexes = dict()
         for key in self.graph:
             vertexes[key] = [float('inf'), 0, current_time]
-        vertexes[start] = [0, 1, current_time]
+        vertexes[start] = [0, 0, current_time]
         
         while end_points:
-            u = min_distance(vertexes)
+            u = self.min_distance(vertexes)
+            vertexes[u][1] = 1
             if u in end_points:
                 end_points.remove(u)
                 result[u] = vertexes[u][0]
                 if not end_points:
                      break
-            for v, times in u.adjacent.items():
+            for v, times in self.graph[u].adjacent.items():
                 travel_time = self.compute_travel_time(times, vertexes[u][2])
                 if vertexes[v][0] > vertexes[u][0] + travel_time:
                     vertexes[v][0] = vertexes[u][0] + travel_time
@@ -44,22 +48,25 @@ class CityMap:
         return result
 
 
-    def count_shortest_paths(clients):
+    #SHOULD WORK
+    def count_shortest_paths(self, clients):
         my_dict = dict()
         for start_client in clients:
             end_points = list(clients)
             end_points.remove(start_client)
-            find_times_from_to(start_client, end_points, my_dict)
+            self.find_times_from_to(start_client, end_points, my_dict)
+        return my_dict
 
-
-    def find_times_from_to(start, end_points, my_dict):
+    #SHOULD WORK
+    def find_times_from_to(self, start, end_points, my_dict):
         vertexes = dict()
         for key in self.graph:
             vertexes[key] = [float('inf'), 0]
-        vertexes[start] = [0, 1]
+        vertexes[start] = [0, 0]
         
         while end_points:
-            u = min_distance(vertexes)
+            u = self.min_distance(vertexes)
+            vertexes[u][1] = 1
             if u in end_points:
                 end_points.remove(u)
                 my_dict[(start, u)] = vertexes[u][0]
@@ -69,13 +76,13 @@ class CityMap:
                 travel_time = times[0]
                 if vertexes[v][0] > vertexes[u][0] + travel_time:
                     vertexes[v][0] = vertexes[u][0] + travel_time
-        return result
 
-    def min_distance(vertexes):
+    #SHOULD WORK
+    def min_distance(self, vertexes):
         min_dist = float('inf')
         best = None
         for v, desc in vertexes.items():
-            if desc[1] and desc[0] < min_dist:
+            if not desc[1] and desc[0] < min_dist:
                 min_dist = desc[0]
                 best = v
         return best
@@ -99,3 +106,6 @@ class CityMap:
             driven_part = time/peek_time
             left_time = (1-driven_part)*normal_time
             return current_time + time + left_time
+
+    def __repr__(self):
+        return str(self.graph)
