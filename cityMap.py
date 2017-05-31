@@ -113,7 +113,7 @@ class CityMap:
 
 
     def is_in_peek_hours(self, current_time):
-        return current_time >= self.peek_hours[0] and current_time <= self.peek_hours[1]
+        return current_time >= self.peek_hours[0] and current_time < self.peek_hours[1]
 
     def __repr__(self):
         return str(self.graph)
