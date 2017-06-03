@@ -14,8 +14,8 @@ def create_graph(filename):
             city.add_edge((start, end, t1, t2))
     return city
 
-city = create_graph('map1.txt')
-delivery = Delivery(city, '0', ['1','2','4','5'], 1000)
+city = create_graph('map.txt')
+delivery = Delivery(city, '7', ['5','4','8','2','3'], 1018)
 track = delivery.A_star()
 print(track)
 #self, city, start, clients, current_time, peek_hours)

@@ -89,23 +89,25 @@ class CityMap:
 
     def compute_travel_time(self, times, current_time, remaining_part=1):
         if self.is_in_peek_hours(current_time):
-            travel_time = times[1]
+            travel_time = times[1]*remaining_part
             end_time = current_time + travel_time
             peek_end = self.peek_hours[1]
             overtime = end_time - peek_end
             if overtime > 0:
                 new_part = 1 - overtime / travel_time
-                return travel_time - overtime + self.compute_travel_time(times, peek_end, new_part)
+                res = travel_time - overtime + self.compute_travel_time(times, peek_end, new_part)
+                return res
             else: 
                 return travel_time
         elif current_time < self.peek_hours[0]:
-            travel_time = times[0]
+            travel_time = times[0]*remaining_part
             end_time = current_time + travel_time
             peek_start = self.peek_hours[0]
             overtime = end_time - peek_start
             if overtime > 0:
                 new_part = 1 - overtime / travel_time
-                return travel_time - overtime + self.compute_travel_time(times, peek_start, new_part)
+                res = travel_time - overtime + self.compute_travel_time(times, peek_start, new_part)
+                return res
             else: 
                 return travel_time
         else:
