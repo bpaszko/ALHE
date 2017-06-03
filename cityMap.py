@@ -47,7 +47,6 @@ class CityMap:
                     vertexes[v][2] = vertexes[u][2] + travel_time
         return result
 
-
     #SHOULD WORK
     def count_shortest_paths(self, clients):
         my_dict = dict()
@@ -87,6 +86,47 @@ class CityMap:
                 best = v
         return best
 
+    def find_route(self, clients, current_time):
+        route = []
+        time = current_time
+        for i in range(len(clients)-1):
+            part_route, time = self.find_route_between_clients(clients[i][0], clients[i+1][0], time)
+            route += part_route
+        route.append(clients[len(clients)-1][0])
+        return route
+
+    def find_route_between_clients(self, start, end, current_time):
+        result = {}
+        vertexes = dict()
+        for key in self.graph:
+            vertexes[key] = [float('inf'), 0, current_time]
+        vertexes[start] = [0, 0, current_time]
+        u = None
+        while True:
+            prev = u
+            u = self.min_distance(vertexes)
+            vertexes[u][1] = 1
+            if u == end:
+                return CityMap.make_route(result, start, end), vertexes[u][2]
+            for v, times in self.graph[u].adjacent.items():
+                travel_time = self.compute_travel_time(times, vertexes[u][2])
+                if vertexes[v][0] > vertexes[u][0] + travel_time:
+                    result[v] = u
+                    vertexes[v][0] = vertexes[u][0] + travel_time
+                    vertexes[v][2] = vertexes[u][2] + travel_time
+        return result
+
+    @staticmethod
+    def make_route(vertices, start, end):
+        current = end
+        route = []
+        while current != start:
+            prev = vertices[current]
+            route.append(prev)
+            current = prev
+        return route[::-1]
+
+
     def compute_travel_time(self, times, current_time, remaining_part=1):
         if self.is_in_peek_hours(current_time):
             travel_time = times[1]*remaining_part
@@ -94,7 +134,7 @@ class CityMap:
             peek_end = self.peek_hours[1]
             overtime = end_time - peek_end
             if overtime > 0:
-                new_part = 1 - overtime / travel_time
+                new_part = overtime / travel_time
                 res = travel_time - overtime + self.compute_travel_time(times, peek_end, new_part)
                 return res
             else: 
@@ -105,7 +145,7 @@ class CityMap:
             peek_start = self.peek_hours[0]
             overtime = end_time - peek_start
             if overtime > 0:
-                new_part = 1 - overtime / travel_time
+                new_part = overtime / travel_time
                 res = travel_time - overtime + self.compute_travel_time(times, peek_start, new_part)
                 return res
             else: 

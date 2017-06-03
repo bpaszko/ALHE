@@ -48,8 +48,6 @@ class Delivery:
         clients_left = vertex.clients_left
         travel_dict = self.city.dijkstra(v_id, list(clients_left), current_time)
         for next_client, time in travel_dict.items():
-            #print(clients_left, next_client)
-            #self.remove_path_from_shortest(v_id, next_client)
             sp = dict(vertex.shortest_paths)
             remove_path_from_shortest(sp, v_id, next_client)
             new_time = current_time + time
@@ -66,12 +64,10 @@ class Delivery:
     def countGX(old_gx, time, waiting_num):
         return old_gx + time*waiting_num
 
-    # SHORTEST PATHS IS GETTING EMPTY!!!!
     def countFX(self, gx, waiting_num, shortest_paths):
         fx = gx
         tmp_paths = dict(shortest_paths) 
         for i in range(waiting_num):
-            #print(tmp_paths.items())
             shortest_way, shortest_time = min(tmp_paths.items(), key=lambda x: x[1])
             tmp_paths.pop(shortest_way)
             fx += shortest_time * (waiting_num-i)
@@ -82,6 +78,7 @@ class Delivery:
         while vert.parent:
             track.append((vert.id, vert.gx, vert.fx))
             vert = vert.parent
+        track.append((vert.id, vert.gx, vert.fx))
         return track[::-1]
 
 def remove_path_from_shortest(paths, from_id, to_id):

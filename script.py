@@ -14,9 +14,12 @@ def create_graph(filename):
             city.add_edge((start, end, t1, t2))
     return city
 
+current_time = 1018
 city = create_graph('map.txt')
-delivery = Delivery(city, '7', ['5','4','8','2','3'], 1018)
+delivery = Delivery(city, '7', ['5','4','8','2','3'], 1015)
 track = delivery.A_star()
 print(track)
+print(city.find_route(track, current_time))
+#print(track)
 #self, city, start, clients, current_time, peek_hours)
 #print(city)
