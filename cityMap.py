@@ -151,7 +151,7 @@ class CityMap:
             else: 
                 return travel_time
         else:
-            return times[0]
+            return times[0]*remaining_part
 
 
     def is_in_peek_hours(self, current_time):
