@@ -1,3 +1,4 @@
+#from collections import namedtuple
 
 class Vertex:
     def __init__(self, id_):
@@ -25,29 +26,32 @@ class CityMap:
         self.graph[start].add_neighbour(tuple(route))
 
 
+    #COMPUTE REAL TIMES FROM FROM ONE CLIENT (START) TO THE REST
     def dijkstra(self, start, end_points, current_time):
         result = {}
-        vertexes = dict()
+        vertices = dict()
+        #Info = named
         for key in self.graph:
-            vertexes[key] = [float('inf'), 0, current_time]
-        vertexes[start] = [0, 0, current_time]
+            vertices[key] = [float('inf'), 0, current_time]
+        vertices[start] = [0, 0, current_time]
         
         while end_points:
-            u = self.min_distance(vertexes)
-            vertexes[u][1] = 1
+            u = self.min_distance(vertices)
+            vertices[u][1] = 1
             if u in end_points:
                 end_points.remove(u)
-                result[u] = vertexes[u][0]
+                result[u] = vertices[u][0]
                 if not end_points:
                      break
             for v, times in self.graph[u].adjacent.items():
-                travel_time = self.compute_travel_time(times, vertexes[u][2])
-                if vertexes[v][0] > vertexes[u][0] + travel_time:
-                    vertexes[v][0] = vertexes[u][0] + travel_time
-                    vertexes[v][2] = vertexes[u][2] + travel_time
+                travel_time = self.compute_travel_time(times, vertices[u][2])
+                if vertices[v][0] > vertices[u][0] + travel_time:
+                    vertices[v][0] = vertices[u][0] + travel_time
+                    vertices[v][2] = vertices[u][2] + travel_time
         return result
 
-    #SHOULD WORK
+
+    #COMPUTE SHORTEST TIMES (NORMAL HOURS) BETWEEN ALL CLIENTS
     def count_shortest_paths(self, clients):
         my_dict = dict()
         for start_client in clients:
@@ -56,36 +60,40 @@ class CityMap:
             self.find_times_from_to(start_client, end_points, my_dict)
         return my_dict
 
-    #SHOULD WORK
+
+    #COMPUTE SHORTEST TIMES (NORMAL HOURS) FROM ONE CLIENT (START) TO THE REST
     def find_times_from_to(self, start, end_points, my_dict):
-        vertexes = dict()
+        vertices = dict()
         for key in self.graph:
-            vertexes[key] = [float('inf'), 0]
-        vertexes[start] = [0, 0]
+            vertices[key] = [float('inf'), 0]
+        vertices[start] = [0, 0]
         
         while end_points:
-            u = self.min_distance(vertexes)
-            vertexes[u][1] = 1
+            u = self.min_distance(vertices)
+            vertices[u][1] = 1
             if u in end_points:
                 end_points.remove(u)
-                my_dict[(start, u)] = vertexes[u][0]
+                my_dict[(start, u)] = vertices[u][0]
                 if not end_points:
                      break
             for v, times in self.graph[u].adjacent.items():
                 travel_time = times[0]
-                if vertexes[v][0] > vertexes[u][0] + travel_time:
-                    vertexes[v][0] = vertexes[u][0] + travel_time
+                if vertices[v][0] > vertices[u][0] + travel_time:
+                    vertices[v][0] = vertices[u][0] + travel_time
 
-    #SHOULD WORK
-    def min_distance(self, vertexes):
+
+    #HELPER FOR DIJKSTRA - FIND VERTEX WITH SHORTEST PATH TO
+    def min_distance(self, vertices):
         min_dist = float('inf')
         best = None
-        for v, desc in vertexes.items():
+        for v, desc in vertices.items():
             if not desc[1] and desc[0] < min_dist:
                 min_dist = desc[0]
                 best = v
         return best
 
+
+    #RETURN SHORTEST ROUTE BETWEEN CLIENTS IN GIVEN ORDER
     def find_route(self, clients, current_time):
         route = []
         time = current_time
@@ -95,27 +103,31 @@ class CityMap:
         route.append(clients[len(clients)-1][0])
         return route
 
+
+    #DIJKSTRA BETWEEN 2 CLIENTS - RETURN EXACT ROUTE
     def find_route_between_clients(self, start, end, current_time):
         result = {}
-        vertexes = dict()
+        vertices = dict()
         for key in self.graph:
-            vertexes[key] = [float('inf'), 0, current_time]
-        vertexes[start] = [0, 0, current_time]
+            vertices[key] = [float('inf'), 0, current_time]
+        vertices[start] = [0, 0, current_time]
         u = None
         while True:
             prev = u
-            u = self.min_distance(vertexes)
-            vertexes[u][1] = 1
+            u = self.min_distance(vertices)
+            vertices[u][1] = 1
             if u == end:
-                return CityMap.make_route(result, start, end), vertexes[u][2]
+                return CityMap.make_route(result, start, end), vertices[u][2]
             for v, times in self.graph[u].adjacent.items():
-                travel_time = self.compute_travel_time(times, vertexes[u][2])
-                if vertexes[v][0] > vertexes[u][0] + travel_time:
+                travel_time = self.compute_travel_time(times, vertices[u][2])
+                if vertices[v][0] > vertices[u][0] + travel_time:
                     result[v] = u
-                    vertexes[v][0] = vertexes[u][0] + travel_time
-                    vertexes[v][2] = vertexes[u][2] + travel_time
+                    vertices[v][0] = vertices[u][0] + travel_time
+                    vertices[v][2] = vertices[u][2] + travel_time
         return result
 
+
+    #RECREATES ROAD BETWEEN VERTICES FROM DIJKSTRA TABLE
     @staticmethod
     def make_route(vertices, start, end):
         current = end
@@ -127,6 +139,7 @@ class CityMap:
         return route[::-1]
 
 
+    #COMPUTE TIME NEEDED TO DRIVE THROUGH ROAD
     def compute_travel_time(self, times, current_time, remaining_part=1):
         if self.is_in_peek_hours(current_time):
             travel_time = times[1]*remaining_part
