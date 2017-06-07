@@ -1,4 +1,3 @@
-#from collections import namedtuple
 
 class Vertex:
     def __init__(self, id_):
@@ -30,13 +29,13 @@ class CityMap:
     def dijkstra(self, start, end_points, current_time):
         result = {}
         vertices = dict()
-        #Info = named
         for key in self.graph:
+            #vertices[key] = [distance, seen, current_time]
             vertices[key] = [float('inf'), 0, current_time]
         vertices[start] = [0, 0, current_time]
         
         while end_points:
-            u = self.min_distance(vertices)
+            u = CityMap.min_distance(vertices)
             vertices[u][1] = 1
             if u in end_points:
                 end_points.remove(u)
@@ -57,33 +56,36 @@ class CityMap:
         for start_client in clients:
             end_points = list(clients)
             end_points.remove(start_client)
-            self.find_times_from_to(start_client, end_points, my_dict)
+            my_dict.update(self.find_times_from_to(start_client, end_points))
         return my_dict
 
 
     #COMPUTE SHORTEST TIMES (NORMAL HOURS) FROM ONE CLIENT (START) TO THE REST
-    def find_times_from_to(self, start, end_points, my_dict):
-        vertices = dict()
+    def find_times_from_to(self, start, end_points):
+        vertices, result = dict(), dict()
         for key in self.graph:
+            #vertices[key] = [distance, seen]
             vertices[key] = [float('inf'), 0]
         vertices[start] = [0, 0]
         
         while end_points:
-            u = self.min_distance(vertices)
+            u = CityMap.min_distance(vertices)
             vertices[u][1] = 1
             if u in end_points:
                 end_points.remove(u)
-                my_dict[(start, u)] = vertices[u][0]
+                result[(start, u)] = vertices[u][0]
                 if not end_points:
                      break
             for v, times in self.graph[u].adjacent.items():
                 travel_time = times[0]
                 if vertices[v][0] > vertices[u][0] + travel_time:
                     vertices[v][0] = vertices[u][0] + travel_time
+        return result
 
 
     #HELPER FOR DIJKSTRA - FIND VERTEX WITH SHORTEST PATH TO
-    def min_distance(self, vertices):
+    @staticmethod
+    def min_distance(vertices):
         min_dist = float('inf')
         best = None
         for v, desc in vertices.items():
@@ -114,7 +116,7 @@ class CityMap:
         u = None
         while True:
             prev = u
-            u = self.min_distance(vertices)
+            u = CityMap.min_distance(vertices)
             vertices[u][1] = 1
             if u == end:
                 return CityMap.make_route(result, start, end), vertices[u][2]
