@@ -9,27 +9,26 @@ import sys
 
 class Config:
     def __init__(self, start, start_time, peek_hours, clients):
-        self.start = starts
+        self.start = start
         self.start_time = start_time
         self.peek_hours = peek_hours
         self.clients = clients
 
 def read_config(path):
     with open(path, 'r') as f:
-        start, start_time = f.readline().split(' ')[:2]
-        peek_start, peek_end = f.readline().split(' ')[:2]
-        clients = f.readline().split(' ')
-        return Config(start, start_time, (peek_start, pee), clients)
+        start, start_time = f.readline().split()[:2]
+        peek_start, peek_end = f.readline().split()[:2]
+        clients = f.readline().split()
+        return Config(start, int(start_time), (int(peek_start), int(peek_end)), clients)
 
 def create_map(path, config):
     city = CityMap(config.peek_hours)
-    with open(filename, 'r') as f:
+    with open(path, 'r') as f:
         while True:
             line = f.readline()
             if line == '':
                 break
-            start, end, t1, t2 = line.split(' ')
-            t2 = t2.replace('\n', '')
+            start, end, t1, t2 = line.split()[:4]
             t1, t2 = int(t1), int(t2)
             city.add_edge((start, end, t1, t2))
     return city
@@ -37,9 +36,9 @@ def create_map(path, config):
 
 def prepare_space(map_path, config_path):
     config = read_config(config_path)
-    city_map = create_map(map_path, config)
+    city = create_map(map_path, config)
     delivery = Delivery(city, config.start, config.clients, config.start_time) 
-    return city_map, delivery
+    return config, city, delivery
 
 
 
@@ -49,7 +48,7 @@ if __name__ == '__main__':
         sys.exit(1)
     map_path = sys.argv[1]
     config_path = sys.argv[2]
-    city, delivery = prepare_space(map_path, config_path)
+    config, city, delivery = prepare_space(map_path, config_path)
     track = delivery.A_star()
     print(track)
-    print(city.find_route(track, current_time))
+    print(city.find_route(track, config.start_time))
