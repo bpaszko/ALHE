@@ -44,7 +44,7 @@ def prepare_space(map_path, config_path):
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
-        sys.stderr.write('usage: %s map_file param_file' % sys.argv[0])
+        sys.stderr.write('usage: %s map_file param_file\n' % sys.argv[0])
         sys.exit(1)
     map_path = sys.argv[1]
     config_path = sys.argv[2]
